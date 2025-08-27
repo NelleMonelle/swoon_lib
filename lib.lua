@@ -5,10 +5,20 @@ function lib:init()
     Utils.hook(Encounter, "init", function(orig, self)
         orig(self)
         self.swoon = false
+        self.autoheal_disabled = false
     end)
 
     Utils.hook(Battle, "canSwoon", function(orig, self)
         return self.encounter.swoon
+    end)
+
+    Utils.hook(PartyMember, "init", function(orig, self)
+        orig(self)
+        self.can_swoon = true
+    end)
+
+    Utils.hook(PartyMember, "canSwoon", function(orig, self)
+        return self.can_swoon
     end)
 
     Utils.hook(PartyBattler, "hurt", function(orig, self, amount, exact, color, options)
@@ -44,7 +54,7 @@ function lib:init()
         end
 
         if (self.chara:getHealth() <= 0) then
-            if Game.battle:canSwoon() then
+            if Game.battle:canSwoon() and self.chara:canSwoon() then
                 self:statusMessage("msg", "swoon", color, true)
             else
                 self:statusMessage("msg", "down", color, true)
@@ -84,7 +94,7 @@ function lib:init()
         else
             self.chara:setHealth(self.chara:getHealth() - amount)
             if (self.chara:getHealth() <= 0) then
-                if Game.battle:canSwoon() then
+                if Game.battle:canSwoon() and self.chara:canSwoon() then
                     self.chara:setHealth(-999)
                 else
                     amount = math.abs((self.chara:getHealth() - (self.chara:getStat("health") / 2)))
@@ -100,7 +110,7 @@ function lib:init()
         self.sleeping = false
         self.hurting = false
         self:toggleOverlay(true)
-        if Game.battle:canSwoon() then
+        if Game.battle:canSwoon() and self.chara:canSwoon() then
             if not self.overlay_sprite:setAnimation("battle/swoon") then
                 self.overlay_sprite:setAnimation("battle/defeat")
             end
@@ -114,7 +124,7 @@ function lib:init()
     end)
 
     Utils.hook(PartyMember, "canAutoHeal", function(orig, self)
-        if Game.battle:canSwoon() then
+        if Game.battle.encounter.autoheal_disabled then
             return false
         end
         return true
