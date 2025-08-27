@@ -44,7 +44,7 @@ function lib:init()
         end
 
         if (self.chara:getHealth() <= 0) then
-            if Game.battle:canSwoon() and self.id ~= "kris" then
+            if Game.battle:canSwoon() then
                 self:statusMessage("msg", "swoon", color, true)
             else
                 self:statusMessage("msg", "down", color, true)
@@ -84,7 +84,7 @@ function lib:init()
         else
             self.chara:setHealth(self.chara:getHealth() - amount)
             if (self.chara:getHealth() <= 0) then
-                if Game.battle:canSwoon() and self.id ~= "kris" then
+                if Game.battle:canSwoon() then
                     self.chara:setHealth(-999)
                 else
                     amount = math.abs((self.chara:getHealth() - (self.chara:getStat("health") / 2)))
@@ -100,7 +100,7 @@ function lib:init()
         self.sleeping = false
         self.hurting = false
         self:toggleOverlay(true)
-        if Game.battle:canSwoon() and self.id ~= "kris" then
+        if Game.battle:canSwoon() then
             if not self.overlay_sprite:setAnimation("battle/swoon") then
                 self.overlay_sprite:setAnimation("battle/defeat")
             end
